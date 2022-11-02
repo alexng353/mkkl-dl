@@ -47,7 +47,15 @@ async fn main() -> std::io::Result<()> {
 
     println!(
         "{}{} {}{} {}{} {}{} {}",
-        c.cyan, "rust-mangakakalot", c.magenta, "v0.1", c.blue, "by", c.yellow, "alexng353", c.end
+        c.cyan,
+        "rust-mangakakalot",
+        c.magenta,
+        "v0.1.0",
+        c.blue,
+        "by",
+        c.yellow,
+        "alexng353",
+        c.end
     );
 
     // make sure url matches https://mangakakalot.com/read-{something}
