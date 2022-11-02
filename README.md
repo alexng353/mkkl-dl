@@ -1,6 +1,6 @@
 # rust-mangakakalot
 
-Author: @alexng353
+Author: [@alexng353](https://github.com/alexng353)
 
 ### Usage
 
