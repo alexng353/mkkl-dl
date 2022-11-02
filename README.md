@@ -12,6 +12,12 @@ Author: @alexng353
 
 Only been tested with one manga so far (devilchi, 118ch)
 
+I MADE IT SLOW ON PURPOSE.
+
+The delay is 500ms between images and 3s between chapters so you don't get instantly banned from mangakakalot.
+
+Also, you can just go change the values in the file if you want since you're probably building from source because of how lazy I am
+
 # License
 
 MIT License

@@ -3,6 +3,11 @@ use reqwest::header;
 use std::{fs, io::Write};
 use tokio;
 
+// global variables
+const IMG_DELAY: u64 = 500;
+const OUTPUT_DIR: &str = "./output";
+const CHAPTER_DELAY: u64 = 3000;
+
 // object with ansii color codes
 struct Color {
     red: &'static str,
@@ -88,7 +93,10 @@ async fn main() -> std::io::Result<()> {
     urls.reverse();
 
     // create a ./output folder if it doesn't exist
-    fs::create_dir_all("./output")?;
+    fs::create_dir_all(&OUTPUT_DIR)?;
+
+    // time it
+    let start = std::time::Instant::now();
 
     for (i, url) in urls.iter().enumerate() {
         let re = Regex::new(r#"_([0-9]+\.?[0-9]?)"#).unwrap();
@@ -102,10 +110,21 @@ async fn main() -> std::io::Result<()> {
             urls.len(),
             c.end
         );
-        get_imgs(url, &format!("./output/chapter{}", chapter)).await;
-        tokio::time::sleep(std::time::Duration::from_secs(3)).await;
+        get_imgs(url, &format!("{}/chapter{}", &OUTPUT_DIR, chapter)).await;
+        tokio::time::sleep(std::time::Duration::from_millis(CHAPTER_DELAY.clone())).await;
     }
-    println!("{}{}{}", c.green, "Done", c.end);
+
+    let duration = start.elapsed();
+    // println!("{}", duration.as_secs());
+
+    println!(
+        "{}{} ({}{} seconds) {}",
+        c.green,
+        "Done",
+        c.cyan,
+        duration.as_secs(),
+        c.end
+    );
     Ok(())
 }
 
@@ -143,7 +162,7 @@ async fn get_imgs(url: &str, path: &str) {
     for url in urls.clone() {
         fetch_img(url, &i.to_string(), &path).await;
         i += 1;
-        tokio::time::sleep(std::time::Duration::from_millis(500)).await;
+        tokio::time::sleep(std::time::Duration::from_millis(IMG_DELAY.clone())).await;
     }
 }
 
