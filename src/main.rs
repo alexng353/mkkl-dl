@@ -59,7 +59,7 @@ async fn main() -> std::io::Result<()> {
     );
 
     // make sure url matches https://mangakakalot.com/read-{something}
-    let re = Regex::new(r"https://mangakakalot.com/read-[a-zA-Z0-9]+").unwrap();
+    let re = Regex::new(r"https://mangakakalot.com/[a-zA-Z0-9]+").unwrap();
 
     if !re.is_match(url) {
         println!("{}{}{}", c.red, "Invalid url", c.end);
@@ -75,10 +75,30 @@ async fn main() -> std::io::Result<()> {
 
     println!("Title: {}{}{}", c.green, title, c.end);
 
-    let tmp = format!(
-        r#""https://mangakakalot.com/chapter/{}/chapter_[0-9]*\.?[0-9]?""#,
-        title.to_lowercase()
-    );
+    // if url[-2] == manga, println!("{}{}{}", c.red, "This is a manga, not a manhwa", c.end);
+
+    // if url.split("/").collect::<Vec<&str>>()[3] == "manga" {
+    //     println!("{}{}{}", c.red, "This is a new url", c.end);
+    //     return Ok(());
+    // }
+
+    // println!("{}", url.split("/").collect::<Vec<&str>>()[4]);
+
+    if !fs::metadata(OUTPUT_DIR).is_ok() {
+        fs::create_dir(OUTPUT_DIR)?;
+    }
+    let tmp: String;
+    if url.split("/").collect::<Vec<&str>>()[3] == "manga" {
+        tmp = format!(
+            r#""https://mangakakalot.com/chapter/{}/chapter_[0-9]*\.?[0-9]?""#,
+            url.split("/").collect::<Vec<&str>>()[4]
+        );
+    } else {
+        tmp = format!(
+            r#""https://mangakakalot.com/chapter/{}/chapter_[0-9]*\.?[0-9]?""#,
+            title.to_lowercase()
+        );
+    }
 
     let re = Regex::new(&tmp).unwrap();
 
