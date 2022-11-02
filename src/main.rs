@@ -40,8 +40,13 @@ async fn main() -> std::io::Result<()> {
     }
     let url = &args[1];
 
+    println!(
+        "{}{} {}{} {}{} {}{} {}",
+        c.cyan, "rust-mangakakalot", c.magenta, "v0.1", c.blue, "by", c.yellow, "alexng353", c.end
+    );
+
     // make sure url matches https://mangakakalot.com/read-{something}
-    let re = Regex::new(r"https://mangakakalot.com/read-\w+").unwrap();
+    let re = Regex::new(r"https://mangakakalot.com/read-[a-zA-Z0-9]+").unwrap();
 
     if !re.is_match(url) {
         println!("{}{}{}", c.red, "Invalid url", c.end);
@@ -89,7 +94,7 @@ async fn main() -> std::io::Result<()> {
         let re = Regex::new(r#"_([0-9]+\.?[0-9]?)"#).unwrap();
         let chapter = re.find(url).unwrap().as_str();
         println!(
-            "\\nDownloading Chapter {}{}{} {}/{}{}",
+            "\nDownloading Chapter {}{}{} ({}/{}){}",
             c.green,
             &chapter[1..chapter.len()],
             c.yellow,
@@ -100,6 +105,7 @@ async fn main() -> std::io::Result<()> {
         get_imgs(url, &format!("./output/chapter{}", chapter)).await;
         tokio::time::sleep(std::time::Duration::from_secs(3)).await;
     }
+    println!("{}{}{}", c.green, "Done", c.end);
     Ok(())
 }
 
