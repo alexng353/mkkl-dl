@@ -2,3 +2,6 @@
 output/*
 
 !.gitkeep
+rust-mangakakalot
+*.exe
+*.dll

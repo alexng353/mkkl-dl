@@ -2,6 +2,10 @@
 
 Author: [@alexng353](https://github.com/alexng353)
 
+## Todo
+
+- add support for chapmanganato.com
+
 ### Usage
 
 ```bash

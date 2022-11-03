@@ -45,6 +45,19 @@ async fn main() -> std::io::Result<()> {
     }
     let url = &args[1];
 
+    // search args for --skip [number]
+    let mut iter = args.iter();
+
+    let mut skip = 0;
+
+    while let Some(arg) = iter.next() {
+        if arg == "--skip" {
+            if let Some(num) = iter.next() {
+                skip = num.parse::<u32>().unwrap();
+            }
+        }
+    }
+
     println!(
         "{}{} {}{} {}{} {}{} {}",
         c.cyan,
@@ -59,7 +72,21 @@ async fn main() -> std::io::Result<()> {
     );
 
     // make sure url matches https://mangakakalot.com/read-{something}
-    let re = Regex::new(r"https://mangakakalot.com/[a-zA-Z0-9]+").unwrap();
+    // let re = Regex::new(r"https://mangakakalot.com/[a-zA-Z0-9]+").unwrap();
+    // new regex that includes https://chapmanganato.com/manga-oa952283
+    let re = Regex::new(r"https://(mangakakalot).com/[a-zA-Z0-9_-]+").unwrap();
+
+    // split url into parts
+    let url_parts: Vec<&str> = url.split('/').collect();
+
+    let site_name = url_parts[2];
+
+    if site_name != "mangakakalot.com" {
+        println!("{}{}{}{}", c.red, site_name, " is not supported", c.end);
+        return Ok(());
+    }
+
+    println!("{}{}{}{}", "Site name: ", c.green, site_name, c.end);
 
     if !re.is_match(url) {
         println!("{}{}{}", c.red, "Invalid url", c.end);
@@ -75,6 +102,8 @@ async fn main() -> std::io::Result<()> {
 
     println!("Title: {}{}{}", c.green, title, c.end);
 
+    // println!("{:?}", url_parts);
+
     // if url[-2] == manga, println!("{}{}{}", c.red, "This is a manga, not a manhwa", c.end);
 
     // if url.split("/").collect::<Vec<&str>>()[3] == "manga" {
@@ -88,17 +117,28 @@ async fn main() -> std::io::Result<()> {
         fs::create_dir(OUTPUT_DIR)?;
     }
     let tmp: String;
-    if url.split("/").collect::<Vec<&str>>()[3] == "manga" {
-        tmp = format!(
-            r#""https://mangakakalot.com/chapter/{}/chapter_[0-9]*\.?[0-9]?""#,
-            url.split("/").collect::<Vec<&str>>()[4]
-        );
+    if site_name == "mangakakalot.com" {
+        if url.split("/").collect::<Vec<&str>>()[3] == "manga" {
+            tmp = format!(
+                r#""https://{}.com/chapter/{}/chapter_[0-9]*\.?[0-9]?""#,
+                site_name,
+                url.split("/").collect::<Vec<&str>>()[4]
+            );
+        } else {
+            tmp = format!(
+                r#""https://{}.com/chapter/{}/chapter_[0-9]*\.?[0-9]?""#,
+                site_name,
+                title.to_lowercase()
+            );
+        }
     } else {
         tmp = format!(
-            r#""https://mangakakalot.com/chapter/{}/chapter_[0-9]*\.?[0-9]?""#,
-            title.to_lowercase()
+            r#""https://{}/{}/chapter-[0-9]*\.?[0-9]?""#,
+            site_name,
+            url.split("/").collect::<Vec<&str>>()[3]
         );
     }
+    println!("{}", tmp);
 
     let re = Regex::new(&tmp).unwrap();
 
@@ -126,8 +166,18 @@ async fn main() -> std::io::Result<()> {
     // time it
     let start = std::time::Instant::now();
 
+    // same code but skip the first {skip} chapters
     for (i, url) in urls.iter().enumerate() {
-        let re = Regex::new(r#"_([0-9]+\.?[0-9]?)"#).unwrap();
+        if i < skip as usize {
+            continue;
+        }
+        let tmp: String;
+        if site_name == "mangakakalot.com" {
+            tmp = "_([0-9]+\\.?[0-9]?)".to_string()
+        } else {
+            tmp = "-([0-9]+\\.?[0-9]?)".to_string()
+        }
+        let re = Regex::new(&tmp).unwrap();
         let chapter = re.find(url).unwrap().as_str();
         println!(
             "\nDownloading Chapter {}{}{} ({}/{}){}",
@@ -162,10 +212,31 @@ async fn get_imgs(url: &str, path: &str) {
 
     let res = reqwest::get(url).await;
     let html = res.unwrap().text().await.unwrap();
-    let re = Regex::new(
-        r#"<div class="container-chapter-reader">((.|\n)*)<div style="text-align:center;">"#,
-    )
-    .unwrap();
+
+    let url_parts: Vec<&str> = url.split('/').collect();
+
+    let site_name = url_parts[2];
+    let re: Regex;
+    if site_name == "mangakakalot.com" {
+        re = Regex::new(
+            r#"<div class="container-chapter-reader">((.|\n)*)<div style="text-align:center;">"#,
+        )
+        .unwrap();
+    } else {
+        // <div class="panel-story-chapter-list">((.|\n)*)<div class="panel-story-comment panel-fb-comment a-h">
+        re = Regex::new(r#"<ul class="row-content-chapter">((.|\n)*)</ul>"#).unwrap();
+    }
+
+    // save html to file test.htm
+
+    let mut file = fs::File::create("test.htm").unwrap();
+    file.write_all(html.as_bytes()).unwrap();
+
+    println!("{}", re);
+
+    let test = re.find_iter(html.as_str()).collect::<Vec<_>>();
+
+    println!("{:?}", test);
 
     let html = re.captures(&html).unwrap().get(1).unwrap().as_str();
 
