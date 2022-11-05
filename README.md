@@ -16,10 +16,24 @@ A very simple regex + reqwests parser and tricker for mangakakalot-affiliated si
 
 ```bash
 # unix
-./rust-mangakakalot <URL>
+./rust-mangakakalot [command] || [url] [options]
 
 # windows
-rust-mangakakalot.exe <URL>
+rust-mangakakalot.exe [command] || [url] [options]
+
+Commands:
+    download    Download manga from url
+    compress    Compress downloaded manga into zip files
+    help        Show this message
+
+Options:
+    -l, --list                      List chapters
+    -f, --format                    Set the format of the zip file (default: .cbz)
+    -h, --help                      Show this message
+    -a, --autocompress              Automatically compress downloaded manga into zip files
+    -s [number], --skip [number]    Start downloading from chapter [number]
+    -c [n] or --chapter [n]         Download chapter by index (see --list)
+    -n [n] or --name [n]            Download chapter by name in url (see --list)
 ```
 
 ### disclaimer
