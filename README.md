@@ -28,17 +28,27 @@ Only been tested once on each site (mangakakalot, chapmanganato)
 
 - mangakakalot
   - Devilchi (118 chapters)
+  - Solo Leveling (180 chapters)
 - chapmanganato
   - Attack on Titan (53 chapters)
 
 I MADE IT SLOW ON PURPOSE.
 
-The delay is 500ms between images and 3s between chapters so you don't get instantly banned from mangakakalot.
+The default delay is 500ms between images and 3s between chapters so you don't get instantly banned from mangakakalot.
 
-Also, you can just go change the values in the file if you want since you're probably building from source because of how lazy I am
+If you put a .env in the same folder as the executable, it *should* automatically read and parse your settings:
+
+below are the default settings
+```bash
+# .env
+IMG_DELAY=500 # value in millis
+OUTPUT_DIR="./output" # it can also take an absolute path
+CHAPTER_DELAY=3000 # value also in millis
+```
 
 # License
 
+```
 MIT License
 
 Copyright (c) 2022 alexng353
@@ -60,3 +70,4 @@ AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
 LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
+```

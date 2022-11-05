@@ -1,5 +1,6 @@
 /target
 output/*
+zipped/*
 
 !.gitkeep
 rust-mangakakalot
@@ -7,3 +8,6 @@ rust-mangakakalot
 *.dll
 
 *.html
+*.zip
+
+.DS_Store

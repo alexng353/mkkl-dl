@@ -88,8 +88,6 @@ pub(crate) async fn downloader(url: &str, skip: u32) -> std::io::Result<()> {
         tokio::time::sleep(std::time::Duration::from_millis(g.chapter_delay.clone())).await;
     }
 
-    println!("{}{:?}{}", c.green, urls, c.end);
-
     Ok(())
 }
 
