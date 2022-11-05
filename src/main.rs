@@ -26,6 +26,9 @@ Options:
     -a, --autocompress              Automatically compress downloaded manga into zip files
     -s [number], --skip [number]    Start downloading from chapter [number]
 "#;
+
+    // TODO -r [n] [n], --range [n] [n]     Download chapters from [n] to [n]
+
     println!("{}", help_msg);
 }
 
