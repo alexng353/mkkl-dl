@@ -2,19 +2,34 @@
 
 Author: [@alexng353](https://github.com/alexng353)
 
+A very simple regex + reqwests parser and tricker for mangakakalot-affiliated sites, written in rust as my first "real" project.
+
 ## Todo
+
+- find out how many bugs there are and fix em all
+
+## Done
 
 - add support for chapmanganato.com
 
 ### Usage
 
 ```bash
+# unix
 ./rust-mangakakalot <URL>
+
+# windows
+rust-mangakakalot.exe <URL>
 ```
 
 ### disclaimer
 
-Only been tested with one manga so far (devilchi, 118ch)
+Only been tested once on each site (mangakakalot, chapmanganato)
+
+- mangakakalot
+  - Devilchi (118 chapters)
+- chapmanganato
+  - Attack on Titan (53 chapters)
 
 I MADE IT SLOW ON PURPOSE.
 
