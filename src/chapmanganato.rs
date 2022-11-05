@@ -3,11 +3,12 @@ use reqwest::header;
 use std::{fs, io::Write};
 
 use crate::{
-    globals::{CHAPTER_DELAY, IMG_DELAY, OUTPUT_DIR},
+    globals::Globals,
     util::{supported_site, Color},
 };
 
 pub(crate) async fn downloader(url: &str, skip: u32) -> std::io::Result<()> {
+    let g: Globals = Globals::new();
     let c: Color = Color::new();
     // print all args
     // regex for https://chapmanganato.com/manga-<name>
@@ -83,8 +84,8 @@ pub(crate) async fn downloader(url: &str, skip: u32) -> std::io::Result<()> {
             urls.len(),
             c.end
         );
-        chapmanganato_get_imgs(url, &format!("{}/chapter{}", &OUTPUT_DIR, chapter)).await;
-        tokio::time::sleep(std::time::Duration::from_millis(CHAPTER_DELAY.clone())).await;
+        chapmanganato_get_imgs(url, &format!("{}/chapter{}", &g.output_dir, chapter)).await;
+        tokio::time::sleep(std::time::Duration::from_millis(g.chapter_delay.clone())).await;
     }
 
     println!("{}{:?}{}", c.green, urls, c.end);
@@ -93,6 +94,7 @@ pub(crate) async fn downloader(url: &str, skip: u32) -> std::io::Result<()> {
 }
 
 pub(crate) async fn chapmanganato_get_imgs(url: &str, path: &str) {
+    let g: Globals = Globals::new();
     fs::create_dir_all(path).unwrap();
 
     let res = reqwest::get(url).await;
@@ -125,7 +127,7 @@ pub(crate) async fn chapmanganato_get_imgs(url: &str, path: &str) {
     for url in urls.clone() {
         chapmanganato_fetch_img(url, &i.to_string(), &path).await;
         i += 1;
-        tokio::time::sleep(std::time::Duration::from_millis(IMG_DELAY.clone())).await;
+        tokio::time::sleep(std::time::Duration::from_millis(g.img_delay.clone())).await;
     }
 }
 

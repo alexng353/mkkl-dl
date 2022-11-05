@@ -8,13 +8,14 @@ mod util;
 use std::fs;
 use tokio;
 
-use crate::{globals::OUTPUT_DIR, util::Color};
+use crate::{globals::Globals, util::Color};
 
 // object with ansii color codes
 #[tokio::main]
 async fn main() -> std::io::Result<()> {
     let start = std::time::Instant::now();
-    // get cmd line args
+
+    let g = Globals::new();
     let c = Color::new();
 
     let args: Vec<String> = std::env::args().collect();
@@ -54,7 +55,7 @@ async fn main() -> std::io::Result<()> {
     let url_parts: Vec<&str> = url.split('/').collect();
     let site_name = url_parts[2];
 
-    fs::create_dir_all(&OUTPUT_DIR)?;
+    fs::create_dir_all(&g.output_dir)?;
 
     match site_name {
         "mangakakalot.com" => mangakakalot::downloader(url, skip).await.unwrap(),
