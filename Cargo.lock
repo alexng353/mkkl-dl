@@ -774,12 +774,13 @@ dependencies = [
 
 [[package]]
 name = "rust-mangakakalot"
-version = "0.1.0"
+version = "0.1.2"
 dependencies = [
  "dotenv",
  "regex",
  "reqwest",
  "serde_json",
+ "term_size",
  "tokio",
  "walkdir",
  "zip",
@@ -931,6 +932,16 @@ dependencies = [
  "libc",
  "redox_syscall",
  "remove_dir_all",
+ "winapi",
+]
+
+[[package]]
+name = "term_size"
+version = "0.3.2"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "1e4129646ca0ed8f45d09b929036bafad5377103edd06e50bf574b353d2b08d9"
+dependencies = [
+ "libc",
  "winapi",
 ]
 

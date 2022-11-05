@@ -1,6 +1,7 @@
 // custom modules
 mod chapmanganato;
 mod compress;
+mod flags;
 mod globals;
 mod mangakakalot;
 mod util;
@@ -21,11 +22,15 @@ Commands:
     help        Show this message
 
 Options:
+    -l, --list                      List chapters
     -f, --format                    Set the format of the zip file (default: .cbz)
     -h, --help                      Show this message
     -a, --autocompress              Automatically compress downloaded manga into zip files
     -s [number], --skip [number]    Start downloading from chapter [number]
+    -c [n] or --chapter [n]         Download chapter by index (see --list)
+    -n [n] or --name [n]            Download chapter by name in url (see --list)
 "#;
+    // -r [n] [n] or --range [n] [n]   Download chapters by range (see --list)
 
     // TODO -r [n] [n], --range [n] [n]     Download chapters from [n] to [n]
 
@@ -34,6 +39,7 @@ Options:
 
 async fn compress() {
     fs::create_dir_all("./zipped").expect("Failed to create \"zipped\" directory");
+    // fs::create_dir_all("./zipped/output").expect("Failed to create \"zipped/output\" directory");
     let paths = fs::read_dir("./output").unwrap();
     for path in paths {
         // regex for .DS_Store
@@ -43,7 +49,6 @@ async fn compress() {
             continue;
         }
         // split / get last
-
         compress::compress(
             &path.as_ref().unwrap().path().to_str().unwrap(),
             &format!(
@@ -54,6 +59,7 @@ async fn compress() {
                     .path()
                     .to_str()
                     .unwrap()
+                    .replace("\\", "/")
                     .split("/")
                     .last()
                     .unwrap(),
@@ -69,15 +75,12 @@ async fn main() -> std::io::Result<()> {
     let c = Color::new();
 
     println!(
-        "{}{} {}{} {}{} {}{} {}",
+        "{}rust-mangakakalot {}{} {}by {}alexng353 {}",
         c.cyan,
-        "rust-mangakakalot",
         c.magenta,
-        "v0.1.0",
+        env!("CARGO_PKG_VERSION"),
         c.blue,
-        "by",
         c.yellow,
-        "alexng353",
         c.end
     );
 

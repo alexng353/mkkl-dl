@@ -55,6 +55,19 @@ pub fn doit(
     dst_file: &str,
     method: zip::CompressionMethod,
 ) -> zip::result::ZipResult<()> {
+    // let os = std::env::consts::OS;
+
+    // if os == "windows" {
+    //     println!("windows");
+    //     // let src_dir = src_dir.replace("/", "\\");
+    //     // let dst_file = dst_file.replace("/", "\\");
+    //     // invert
+    //     let src_dir = src_dir.replace("\\", "/");
+    //     let dst_file = dst_file.replace("\\", "/");
+    //     println!("src_dir: {}", src_dir);
+    //     println!("dst_file: {}", dst_file);
+    // }
+
     if !Path::new(src_dir).is_dir() {
         return Err(ZipError::FileNotFound);
     }

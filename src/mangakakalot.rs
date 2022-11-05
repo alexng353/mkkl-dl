@@ -10,6 +10,9 @@ use crate::{
 pub(crate) async fn downloader(url: &str, skip: u32) -> std::io::Result<()> {
     let g = Globals::new();
     let c = Color::new();
+
+    let args = std::env::args().collect::<Vec<String>>();
+
     let re = Regex::new(r"https://(mangakakalot).com/[a-zA-Z0-9_-]+").unwrap();
 
     let url_parts: Vec<&str> = url.split('/').collect();
@@ -61,6 +64,64 @@ pub(crate) async fn downloader(url: &str, skip: u32) -> std::io::Result<()> {
         urls.clone().len(),
         c.end
     );
+
+    // search args for --list or -l
+    let name_index = url.split("/").collect::<Vec<&str>>().len();
+
+    if args.contains(&"--list".to_string()) || args.contains(&"-l".to_string()) {
+        super::flags::list(urls.clone(), name_index).unwrap();
+        return Ok(());
+    }
+
+    // search args for -c or --chapter
+    if args.contains(&"--chapter".to_string()) || args.contains(&"-c".to_string()) {
+        let mut iter = args.iter();
+
+        while let Some(arg) = iter.next() {
+            if arg == "--chapter" || arg == "-c" {
+                if let Some(num) = iter.next() {
+                    let num = num.parse::<usize>().unwrap();
+                    urls = vec![urls[num]];
+                }
+            }
+        }
+    }
+
+    // search for --name or -n and search the last part of the url for the name
+
+    let mut name = String::new();
+    if args.contains(&"--name".to_string()) || args.contains(&"-n".to_string()) {
+        let mut iter = args.iter();
+
+        while let Some(arg) = iter.next() {
+            if arg == "--name" || arg == "-n" {
+                if let Some(n) = iter.next() {
+                    name = n.to_string();
+
+                    // new vec, push url.split("/").collect::<Vec<&str>>()[5]
+
+                    let mut tmp = Vec::new();
+                    for url in urls.clone() {
+                        tmp.push(url.split("/").collect::<Vec<&str>>()[5]);
+                    }
+
+                    // search for name in tmp
+
+                    let pos = urls
+                        .iter()
+                        .position(|x| x.split("/").collect::<Vec<&str>>()[4] == name)
+                        .unwrap();
+
+                    urls = vec![urls[pos]];
+                }
+            }
+        }
+    }
+
+    if name == "" {
+        name = title.to_string();
+    }
+    println!("{}{}{}{}{}", c.green, "Downloading:", c.blue, name, c.end);
 
     for (i, url) in urls.iter().enumerate() {
         if i < skip as usize {

@@ -41,8 +41,11 @@ pub(crate) async fn compress(src_dir: &str, dst_file: &str) {
 
     // let src_dir = &*args[2];
     // let dst_file = &*args[3];
-    println!("src_dir: {}", src_dir);
-    println!("dst_file: {}", dst_file);
+    // println!("src_dir: {}", src_dir);
+    // println!("dst_file: {}", dst_file);
+
+    // get os
+
     for &method in [METHOD_STORED, METHOD_DEFLATED, METHOD_BZIP2, METHOD_ZSTD].iter() {
         if method.is_none() {
             continue;

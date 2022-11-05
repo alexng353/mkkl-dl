@@ -1,6 +1,6 @@
 [package]
 name = "rust-mangakakalot"
-version = "0.1.0"
+version = "0.1.2"
 edition = "2021"
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
@@ -13,3 +13,4 @@ serde_json = "1.0.87"
 dotenv = "0.15.0"
 zip = "0.6.3"
 walkdir = "2.3.2"
+term_size = "0.3.2"

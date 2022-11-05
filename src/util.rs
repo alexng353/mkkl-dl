@@ -5,6 +5,7 @@ pub(crate) struct Color {
     pub blue: &'static str,
     pub magenta: &'static str,
     pub cyan: &'static str,
+    pub white: &'static str,
     pub end: &'static str,
 }
 
@@ -17,6 +18,8 @@ impl Color {
             blue: "\x1b[34m",
             magenta: "\x1b[35m",
             cyan: "\x1b[36m",
+            white: "\x1b[37m",
+
             end: "\x1b[0m",
         }
     }
