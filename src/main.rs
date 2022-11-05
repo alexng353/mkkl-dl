@@ -94,7 +94,7 @@ async fn main() -> std::io::Result<()> {
     let command: &str = &args[1];
 
     match command {
-        "-h" | "--help" => {
+        "-h" | "--help" | "help" | "h" => {
             help();
         }
         "compress" => compress().await,
