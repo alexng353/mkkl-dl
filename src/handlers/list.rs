@@ -67,9 +67,21 @@ use -c [n] or --chapter [n]         to download a chapter by index ({}yellow{} n
 use -n [n] or --name [n]            to download a chapter by name ({}white{} text)
 use -s [n] or --skip [n]            to skip the first n by index ({}yellow{} number)
 use -r [n] [n] or --range [n] [n]   to download a range of chapters by index ({}yellow{} number)
+use -r [n] [n], --range [n] [n]     Download chapters from [n] to [n] by index ({}yellow{} number)
 
 use -h or --help for more info{}",
-        c.cyan, c.yellow, c.cyan, c.white, c.cyan, c.yellow, c.cyan, c.yellow, c.cyan, c.end
+        c.cyan,
+        c.yellow,
+        c.cyan,
+        c.white,
+        c.cyan,
+        c.yellow,
+        c.cyan,
+        c.yellow,
+        c.cyan,
+        c.yellow,
+        c.cyan,
+        c.end
     );
     Ok(())
 }

@@ -28,6 +28,7 @@ Options:
     -s [number], --skip [number]    Start downloading from chapter [number]
     -c [n] or --chapter [n]         Download chapter by index (see --list)
     -n [n] or --name [n]            Download chapter by name in url (see --list)
+    -r [n] [n], --range [n] [n]     Download chapters from [n] to [n]
 "#;
     // -r [n] [n] or --range [n] [n]   Download chapters by range (see --list)
 
