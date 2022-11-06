@@ -4,7 +4,7 @@ use std::{fs, io::Write};
 
 use crate::{
     globals::Globals,
-    util::{supported_site, Color},
+    utils::{color::Color, util::supported_site},
 };
 
 pub(crate) async fn downloader(url: &str, skip: u32) -> std::io::Result<()> {
@@ -71,25 +71,13 @@ pub(crate) async fn downloader(url: &str, skip: u32) -> std::io::Result<()> {
     let name_index = url.split("/").collect::<Vec<&str>>().len();
 
     if args.contains(&"--list".to_string()) || args.contains(&"-l".to_string()) {
-        super::flags::list(urls.clone(), name_index).unwrap();
+        super::handlers::list::list(urls.clone(), name_index).unwrap();
 
         return Ok(());
     }
 
     // search args for -c or --chapter
-    if args.contains(&"--chapter".to_string()) || args.contains(&"-c".to_string()) {
-        let mut iter = args.iter();
-
-        while let Some(arg) = iter.next() {
-            if arg == "--chapter" || arg == "-c" {
-                if let Some(num) = iter.next() {
-                    let num = num.parse::<usize>().unwrap();
-                    urls = vec![urls[num]];
-                }
-            }
-        }
-    }
-
+    urls = super::handlers::chapter::chapter(urls);
     // search for --name or -n and search the last part of the url for the name
 
     let mut name = String::new();
@@ -123,6 +111,10 @@ pub(crate) async fn downloader(url: &str, skip: u32) -> std::io::Result<()> {
             }
         }
     }
+
+    // extract range function into a function
+
+    urls = crate::handlers::range::range(urls);
 
     if name == "" {
         name = title.to_string();

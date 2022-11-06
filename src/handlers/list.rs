@@ -1,4 +1,4 @@
-use crate::util::Color;
+use crate::utils::color::Color;
 use std::vec;
 
 pub fn list(urls: vec::Vec<&str>, name_index: usize) -> std::io::Result<()> {

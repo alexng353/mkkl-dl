@@ -1,17 +1,16 @@
 // custom modules
 mod chapmanganato;
 mod compress;
-mod flags;
 mod globals;
+mod handlers;
 mod mangakakalot;
-mod util;
-mod zipdir;
+mod utils;
 
 // imports
 use std::fs;
 use tokio;
 
-use crate::{globals::Globals, util::Color};
+use crate::{globals::Globals, utils::color::Color};
 
 fn help() {
     let help_msg = r#"Usage: ./rust-mangakakalot [command] [url] [options]
