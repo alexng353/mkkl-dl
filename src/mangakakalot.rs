@@ -29,6 +29,8 @@ pub(crate) async fn downloader(url: &str, skip: u32) -> std::io::Result<()> {
     let res = reqwest::get(url).await;
     let html = res.unwrap().text().await.unwrap();
 
+    // println!("{}", html);
+
     let re = Regex::new(r#"<h1>(.*)</h1>"#).unwrap();
     let title = re.captures(&html).unwrap().get(1).unwrap().as_str();
 
@@ -140,6 +142,7 @@ pub(crate) async fn downloader(url: &str, skip: u32) -> std::io::Result<()> {
 }
 
 pub(crate) async fn mangakakalot_get_imgs(url: &str, path: &str) {
+    let c = Color::new();
     let g = Globals::new();
     fs::create_dir_all(path).unwrap();
 
@@ -164,18 +167,32 @@ pub(crate) async fn mangakakalot_get_imgs(url: &str, path: &str) {
 
     println!(
         "Found {}{:?}{} images",
-        Color::new().green,
+        c.green,
         urls.clone().len(),
-        Color::new().end
+        c.end
     );
 
     // get an image every 500 millis
+    let start = std::time::Instant::now();
+
     let mut i = 0;
     for url in urls.clone() {
         mangakakalot_fetch_img(url, &i.to_string(), &path).await;
         i += 1;
         tokio::time::sleep(std::time::Duration::from_millis(g.img_delay.clone())).await;
     }
+
+    let duration = start.elapsed();
+    // println!("{}", duration.as_secs());
+
+    println!(
+        "{}{} ({}{} seconds) {}",
+        c.green,
+        "Done",
+        c.cyan,
+        duration.as_secs(),
+        c.end
+    );
 }
 
 async fn mangakakalot_fetch_img(url: &str, name: &str, path: &str) {
