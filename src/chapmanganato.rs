@@ -38,8 +38,8 @@ pub(crate) async fn downloader(url: &str, skip: u32) -> std::io::Result<()> {
 
     // write the html to file test.html
 
-    let mut file = fs::File::create("test.html")?;
-    file.write_all(html.as_bytes())?;
+    // let mut file = fs::File::create("test.html")?;
+    // file.write_all(html.as_bytes())?;
 
     let tmp: String;
 
@@ -140,7 +140,11 @@ pub(crate) async fn downloader(url: &str, skip: u32) -> std::io::Result<()> {
             urls.len(),
             c.end
         );
-        chapmanganato_get_imgs(url, &format!("{}/chapter{}", &g.output_dir, chapter)).await;
+        chapmanganato_get_imgs(
+            url,
+            &format!("{}/{}/chapter{}", &g.output_dir, title, chapter),
+        )
+        .await;
         tokio::time::sleep(std::time::Duration::from_millis(g.chapter_delay.clone())).await;
     }
 

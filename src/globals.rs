@@ -1,9 +1,9 @@
 use dotenv::dotenv;
 use std::env;
 
-const IMG_DELAY: u64 = 500;
+const IMG_DELAY: u64 = 300;
 const OUTPUT_DIR: &str = "./output";
-const CHAPTER_DELAY: u64 = 3000;
+const CHAPTER_DELAY: u64 = 1000;
 const ZIP_FORMAT: &str = ".zip";
 const AUTO_COMPRESS: bool = false;
 

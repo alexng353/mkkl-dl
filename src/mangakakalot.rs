@@ -134,7 +134,11 @@ pub(crate) async fn downloader(url: &str, skip: u32) -> std::io::Result<()> {
             urls.len(),
             c.end
         );
-        mangakakalot_get_imgs(url, &format!("{}/chapter{}", &g.output_dir, chapter)).await;
+        mangakakalot_get_imgs(
+            url,
+            &format!("{}/{}/chapter{}", &g.output_dir, title, chapter),
+        )
+        .await;
         tokio::time::sleep(std::time::Duration::from_millis(g.chapter_delay.clone())).await;
     }
 
@@ -165,12 +169,7 @@ pub(crate) async fn mangakakalot_get_imgs(url: &str, path: &str) {
         urls.push(&m.as_str()[10..m.as_str().len()]);
     }
 
-    println!(
-        "Found {}{:?}{} images",
-        c.green,
-        urls.clone().len(),
-        c.end
-    );
+    println!("Found {}{:?}{} images", c.green, urls.clone().len(), c.end);
 
     // get an image every 500 millis
     let start = std::time::Instant::now();
