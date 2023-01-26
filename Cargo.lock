@@ -779,6 +779,7 @@ dependencies = [
  "dotenv",
  "regex",
  "reqwest",
+ "select-rs",
  "serde_json",
  "term_size",
  "tokio",
@@ -832,6 +833,16 @@ checksum = "0160a13a177a45bfb43ce71c01580998474f556ad854dcbca936dd2841a5c556"
 dependencies = [
  "core-foundation-sys",
  "libc",
+]
+
+[[package]]
+name = "select-rs"
+version = "0.1.2"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "f31493f0ccd0b7714b1ed88565e8c781c79c2d70a54bd512708b7ea80c86e845"
+dependencies = [
+ "libc",
+ "winapi",
 ]
 
 [[package]]
