@@ -13,3 +13,5 @@ rust-mangakakalot
 .DS_Store
 
 one\ punch\ man/*
+
+out/
