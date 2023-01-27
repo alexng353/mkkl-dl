@@ -1,5 +1,8 @@
 use regex::Regex;
 use reqwest::header;
+use select::document::Document;
+use select::node::Node;
+use select::predicate::{Attr, Class, Name, Predicate};
 use std::{fs, io::Write};
 
 use crate::{
@@ -33,6 +36,15 @@ pub(crate) async fn downloader(url: &str, skip: u32) -> std::io::Result<()> {
 
     let re = Regex::new(r#"<h1>(.*)</h1>"#).unwrap();
     let title = re.captures(&html).unwrap().get(1).unwrap().as_str();
+
+    let title = select::document::Document::from(&html)
+        .find(Class("info-top"))
+        .next()
+        .unwrap()
+        .find(Name("h1"))
+        .next()
+        .unwrap()
+        .text();
 
     println!("Title: {}{}{}", c.green, title, c.end);
 
@@ -121,8 +133,6 @@ pub(crate) async fn downloader(url: &str, skip: u32) -> std::io::Result<()> {
     }
     println!("{}{}{}{}{}", c.green, "Downloading:", c.blue, name, c.end);
 
-    // chapmanganato_get_imgs(urls[0], &format!("{}/chapter{}", &OUTPUT_DIR, 0)).await;
-
     for (i, url) in urls.iter().enumerate() {
         if i < skip as usize {
             continue;
@@ -153,39 +163,28 @@ pub(crate) async fn downloader(url: &str, skip: u32) -> std::io::Result<()> {
 
 pub(crate) async fn chapmanganato_get_imgs(url: &str, path: &str) {
     let g: Globals = Globals::new();
+    let c = Color::new();
     fs::create_dir_all(path).unwrap();
 
     let res = reqwest::get(url).await;
-    let html = res.unwrap().text().await.unwrap();
+    let text = res.unwrap().text().await.unwrap();
+    let html = text.as_str();
 
-    let re: Regex = Regex::new(
-        r#"<div class="container-chapter-reader">((.|\n)*)<div style="max-height: 380px; text-align: center; width: 810px; margin: 10px auto; overflow: hidden; max-width: 100%;">"#,
-    )
-    .unwrap();
+    let document = Document::from(html);
+    for node in document.find(Class("container-chapter-reader")) {
+        let mut i = 0;
 
-    let html = re.captures(&html).unwrap().get(1).unwrap().as_str();
+        // get the length of a list of all the imgs
+        let imgs = node.find(Name("img")).collect::<Vec<Node>>();
 
-    let re = Regex::new(r#"<img src="([^"]*)"#).unwrap();
+        println!("Found {}{:?}{} images", c.green, imgs.len(), c.end);
 
-    let matches = re.find_iter(&html);
-
-    let mut urls = Vec::new();
-    for m in matches {
-        urls.push(&m.as_str()[10..m.as_str().len()]);
-    }
-
-    println!(
-        "Found {}{:?}{} images",
-        Color::new().green,
-        urls.clone().len(),
-        Color::new().end
-    );
-    let mut i = 0;
-
-    for url in urls.clone() {
-        chapmanganato_fetch_img(url, &i.to_string(), &path).await;
-        i += 1;
-        tokio::time::sleep(std::time::Duration::from_millis(g.img_delay.clone())).await;
+        for img in imgs {
+            let src = img.attr("src").unwrap();
+            chapmanganato_fetch_img(src, &i.to_string(), &path).await;
+            i += 1;
+            tokio::time::sleep(std::time::Duration::from_millis(g.img_delay.clone())).await;
+        }
     }
 }
 
