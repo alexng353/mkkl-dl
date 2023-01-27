@@ -9,66 +9,10 @@ mod utils;
 // imports
 use std::fs;
 use tokio;
+use url::Url;
 
 use crate::{globals::Globals, utils::color::Color};
 
-fn help() {
-    let help_msg = r#"Usage: ./rust-mangakakalot [command] [url] [options]
-
-Commands:
-    download    Download manga from url
-    compress    Compress downloaded manga into zip files
-    help        Show this message
-
-Options:
-    -l, --list                      List chapters
-    -f, --format                    Set the format of the zip file (default: .cbz)
-    -h, --help                      Show this message
-    -a, --autocompress              Automatically compress downloaded manga into zip files
-    -s [number], --skip [number]    Start downloading from chapter [number]
-    -c [n] or --chapter [n]         Download chapter by index (see --list)
-    -n [n] or --name [n]            Download chapter by name in url (see --list)
-    -r [n] [n], --range [n] [n]     Download chapters from [n] to [n]
-"#;
-    // -r [n] [n] or --range [n] [n]   Download chapters by range (see --list)
-
-    // TODO -r [n] [n], --range [n] [n]     Download chapters from [n] to [n]
-
-    println!("{}", help_msg);
-}
-
-async fn compress() {
-    fs::create_dir_all("./zipped").expect("Failed to create \"zipped\" directory");
-    // fs::create_dir_all("./zipped/output").expect("Failed to create \"zipped/output\" directory");
-    let paths = fs::read_dir("./output").unwrap();
-    for path in paths {
-        // regex for .DS_Store
-        let re = regex::Regex::new(r"\.DS_Store").unwrap();
-
-        if re.is_match(&path.as_ref().unwrap().path().to_str().unwrap()) {
-            continue;
-        }
-        // split / get last
-        compress::compress(
-            &path.as_ref().unwrap().path().to_str().unwrap(),
-            &format!(
-                "./zipped/{}{}",
-                &path
-                    .as_ref()
-                    .unwrap()
-                    .path()
-                    .to_str()
-                    .unwrap()
-                    .replace("\\", "/")
-                    .split("/")
-                    .last()
-                    .unwrap(),
-                globals::Globals::new().zip_format
-            ),
-        )
-        .await;
-    }
-}
 // object with ansii color codes
 #[tokio::main]
 async fn main() -> std::io::Result<()> {
@@ -130,6 +74,7 @@ async fn download() -> std::io::Result<()> {
         return Ok(());
     }
     let url = &args[1];
+    let parsable = Url::parse(url).unwrap();
 
     // search args for --skip [number]
     let mut iter = args.iter();
@@ -145,16 +90,13 @@ async fn download() -> std::io::Result<()> {
     }
 
     // split url into parts
-    let url_parts: Vec<&str> = url.split('/').collect();
-    let site_name = url_parts[2];
+    let site_name = parsable.host_str().unwrap();
 
     fs::create_dir_all(&g.output_dir)?;
 
     match site_name {
-        "mangakakalot.com" => mangakakalot::downloader(url, skip).await.unwrap(),
-        // "chapmanganato.com" => chapmanganato::downloader(url, skip).await.unwrap(),
-        "chapmanganato.com" => chapmanganato::downloader(url, skip).await.unwrap(),
-
+        "mangakakalot.com" => mangakakalot::downloader(parsable, skip).await.unwrap(),
+        "chapmanganato.com" => chapmanganato::downloader(parsable, skip).await.unwrap(),
         _ => {
             println!("{}{}{}{}", c.red, site_name, " is not supported", c.end);
             return Ok(());
@@ -174,4 +116,90 @@ async fn download() -> std::io::Result<()> {
         c.end
     );
     Ok(())
+}
+
+fn help() {
+    let help_msg = r#"Usage: ./rust-mangakakalot [command] [url] [options]
+
+Commands:
+    download    Download manga from url
+    compress    Compress downloaded manga into zip files
+    help        Show this message
+
+Options:
+    -l, --list                      List chapters
+    -f, --format                    Set the format of the zip file (default: .cbz)
+    -h, --help                      Show this message
+    -a, --autocompress              Automatically compress downloaded manga into zip files
+    -s [number], --skip [number]    Start downloading from chapter [number]
+    -c [n] or --chapter [n]         Download chapter by index (see --list)
+    -n [n] or --name [n]            Download chapter by name in url (see --list)
+    -r [n] [n], --range [n] [n]     Download chapters from [n] to [n]
+"#;
+
+    println!("{}", help_msg);
+}
+
+async fn compress() {
+    fs::create_dir_all("./zipped").expect("Failed to create \"zipped\" directory");
+    let books = fs::read_dir("./output").unwrap();
+    for book in books {
+        println!(
+            "Compressing {}",
+            book.as_ref().unwrap().path().to_str().unwrap()
+        );
+
+        fs::create_dir_all(
+            "./zipped/".to_string()
+                + &book
+                    .as_ref()
+                    .unwrap()
+                    .path()
+                    .to_str()
+                    .unwrap()
+                    .replace("\\", "/")
+                    .split("/")
+                    .last()
+                    .unwrap(),
+        )
+        .expect("Failed to create \"zipped\" directory");
+
+        let chapters = fs::read_dir(book.as_ref().unwrap().path()).unwrap();
+        for chapter in chapters {
+            // regex for .DS_Store
+            let re = regex::Regex::new(r"\.DS_Store").unwrap();
+
+            if re.is_match(&chapter.as_ref().unwrap().path().to_str().unwrap()) {
+                continue;
+            }
+            // split / get last
+            compress::compress(
+                &chapter.as_ref().unwrap().path().to_str().unwrap(),
+                &format!(
+                    "./zipped/{}/{}{}",
+                    book.as_ref()
+                        .unwrap()
+                        .path()
+                        .to_str()
+                        .unwrap()
+                        .replace("\\", "/")
+                        .split("/")
+                        .last()
+                        .unwrap(),
+                    &chapter
+                        .as_ref()
+                        .unwrap()
+                        .path()
+                        .to_str()
+                        .unwrap()
+                        .replace("\\", "/")
+                        .split("/")
+                        .last()
+                        .unwrap(),
+                    globals::Globals::new().zip_format
+                ),
+            )
+            .await;
+        }
+    }
 }

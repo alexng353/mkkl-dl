@@ -51,7 +51,11 @@ pub(crate) async fn compress(src_dir: &str, dst_file: &str) {
             continue;
         }
         match doit(src_dir, dst_file, method.unwrap()) {
-            Ok(_) => println!("done: {} written to {}", src_dir, dst_file),
+            Ok(_) => println!(
+                "\ndone: {} written to {}",
+                src_dir.replace("\\", "/"),
+                dst_file
+            ),
             Err(e) => println!("Error: {:?}", e),
         }
     }

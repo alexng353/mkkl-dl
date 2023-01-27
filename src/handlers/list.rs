@@ -1,7 +1,10 @@
 use crate::utils::color::Color;
 use std::vec;
 
-pub fn list(urls: vec::Vec<&str>, name_index: usize) -> std::io::Result<()> {
+pub fn list(urls: vec::Vec<&str>, name_index: &usize) -> std::io::Result<()> {
+    // work around for now
+    let name_index = *name_index;
+
     // let tmp = last part of url
 
     let c = Color::new();

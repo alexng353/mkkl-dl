@@ -969,7 +969,7 @@ dependencies = [
 
 [[package]]
 name = "rust-mangakakalot"
-version = "0.1.3"
+version = "0.2.0"
 dependencies = [
  "dotenv",
  "regex",
@@ -978,6 +978,7 @@ dependencies = [
  "serde_json",
  "term_size",
  "tokio",
+ "url",
  "walkdir",
  "zip",
 ]

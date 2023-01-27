@@ -1,134 +1,93 @@
 use regex::Regex;
 use reqwest::header;
-use select::predicate::Name;
-use std::{fs, io::Write};
-
 use select::document::Document;
 use select::node::Node;
-use select::predicate::{Attr, Class};
+use select::predicate::{Class, Name};
+use std::time::Instant;
+use std::{fs, io::Write};
+
+use url::Url;
 
 use crate::{
     globals::Globals,
     utils::{color::Color, util::supported_site},
 };
 
-pub(crate) async fn downloader(url: &str, skip: u32) -> std::io::Result<()> {
-    let g = Globals::new();
-    let c = Color::new();
-
+pub(crate) async fn downloader(url: Url, skip: u32) -> std::io::Result<()> {
     let args = std::env::args().collect::<Vec<String>>();
+
+    let g: Globals = Globals::new();
+    let c: Color = Color::new();
 
     let re = Regex::new(r"https://(mangakakalot).com/[a-zA-Z0-9_-]+").unwrap();
 
-    let url_parts: Vec<&str> = url.split('/').collect();
+    let site_name = url.host_str().unwrap();
 
-    let site_name = url_parts[2];
+    let url_str = url.to_string();
 
-    supported_site(site_name);
-
-    if !re.is_match(url) {
+    if !re.is_match(&url_str) {
         println!("{}{}{}", c.red, "Invalid url", c.end);
         return Ok(());
     }
 
+    supported_site(site_name);
+
     let res = reqwest::get(url).await;
-    let html = res.unwrap().text().await.unwrap();
+    let text = res.unwrap().text().await.unwrap();
+    let html = text.as_str();
 
-    // println!("{}", html);
-
-    let re = Regex::new(r#"<h1>(.*)</h1>"#).unwrap();
-    let title = re.captures(&html).unwrap().get(1).unwrap().as_str();
+    let doc = Document::from(html);
+    let title = doc.find(Name("h1")).next().unwrap().text();
 
     println!("Title: {}{}{}", c.green, title, c.end);
 
-    let tmp: String;
-    if url.split("/").collect::<Vec<&str>>()[3] == "manga" {
-        tmp = format!(
-            r#""https://{}/chapter/{}/chapter_[0-9]*\.?[0-9]?""#,
-            site_name,
-            url.split("/").collect::<Vec<&str>>()[4]
-        );
-    } else {
-        tmp = format!(
-            r#""https://{}/chapter/{}/chapter_[0-9]*\.?[0-9]?""#,
-            site_name,
-            title.to_lowercase()
-        );
-    }
+    let mut file = fs::File::create(format!("{}.html", title))?;
+    // write all html
+    file.write_all(html.as_bytes())?;
 
-    let re = Regex::new(&tmp).unwrap();
-    let matches = re.find_iter(&html);
+    let chapter_list = doc.find(Class("chapter-list")).collect::<Vec<Node>>();
 
-    let mut urls = Vec::new();
-    for m in matches {
-        urls.push(&m.as_str()[1..m.as_str().len() - 1]);
-    }
-    urls.reverse();
+    let mut chapter_blocks = chapter_list[0].find(Name("a")).collect::<Vec<Node>>();
+    chapter_blocks.reverse();
 
     println!(
         "Found {}{:?}{} chapters",
         c.green,
-        urls.clone().len(),
+        chapter_blocks.len(),
         c.end
     );
 
-    // search args for --list or -l
-    let name_index = url.split("/").collect::<Vec<&str>>().len();
+    let mut chapter_urls = Vec::new();
+
+    for a in &chapter_blocks {
+        let href = a.attr("href").unwrap();
+        chapter_urls.push(href);
+    }
 
     if args.contains(&"--list".to_string()) || args.contains(&"-l".to_string()) {
-        super::handlers::list::list(urls.clone(), name_index).unwrap();
+        let name_index = &url_str.split("/").collect::<Vec<&str>>().len();
+
+        crate::handlers::list::list(chapter_urls.clone(), name_index).unwrap();
+
         return Ok(());
     }
 
-    // search args for -c or --chapter
-    urls = super::handlers::chapter::chapter(urls);
+    chapter_urls = crate::handlers::flags::chapter(chapter_urls);
+    chapter_urls = crate::handlers::flags::range(chapter_urls);
+    chapter_urls = crate::handlers::flags::name(chapter_urls);
 
-    // search for --name or -n and search the last part of the url for the name
+    println!(
+        "Downloading {}{}{} chapters",
+        c.green,
+        chapter_urls.len(),
+        c.end
+    );
 
-    let mut name = String::new();
-    if args.contains(&"--name".to_string()) || args.contains(&"-n".to_string()) {
-        let mut iter = args.iter();
-
-        while let Some(arg) = iter.next() {
-            if arg == "--name" || arg == "-n" {
-                if let Some(n) = iter.next() {
-                    name = n.to_string();
-
-                    // new vec, push url.split("/").collect::<Vec<&str>>()[5]
-
-                    let mut tmp = Vec::new();
-                    for url in urls.clone() {
-                        tmp.push(url.split("/").collect::<Vec<&str>>()[5]);
-                    }
-
-                    // search for name in tmp
-
-                    let pos = urls
-                        .iter()
-                        .position(|x| x.split("/").collect::<Vec<&str>>()[4] == name)
-                        .unwrap();
-
-                    urls = vec![urls[pos]];
-                }
-            }
-        }
-    }
-
-    // -r [n] [n] for a range of chapters
-    urls = crate::handlers::range::range(urls);
-
-    if name == "" {
-        name = title.to_string();
-    }
-    println!("{}{}{}{}{}", c.green, "Downloading:", c.blue, name, c.end);
-
-    for (i, url) in urls.iter().enumerate() {
+    for (i, url) in chapter_urls.iter().enumerate() {
         if i < skip as usize {
             continue;
         }
-        let tmp: String = "_([0-9]+\\.?[0-9]?)".to_string();
-
-        let re = Regex::new(&tmp).unwrap();
+        let re = Regex::new("_([0-9]+\\.?[0-9]?)").unwrap();
         let chapter = re.find(url).unwrap().as_str();
         println!(
             "\nDownloading Chapter {}{}{} ({}/{}){}",
@@ -136,7 +95,7 @@ pub(crate) async fn downloader(url: &str, skip: u32) -> std::io::Result<()> {
             &chapter[1..chapter.len()],
             c.yellow,
             i + 1,
-            urls.len(),
+            &chapter_urls.len(),
             c.end
         );
         mangakakalot_get_imgs(
@@ -151,6 +110,11 @@ pub(crate) async fn downloader(url: &str, skip: u32) -> std::io::Result<()> {
 }
 
 pub(crate) async fn mangakakalot_get_imgs(url: &str, path: &str) {
+    let verbose = std::env::args()
+        .collect::<Vec<String>>()
+        .iter()
+        .any(|arg| arg == "--verbose" || arg == "-v");
+
     let g: Globals = Globals::new();
     let c = Color::new();
     fs::create_dir_all(path).unwrap();
@@ -161,6 +125,8 @@ pub(crate) async fn mangakakalot_get_imgs(url: &str, path: &str) {
 
     let document = Document::from(html);
     for node in document.find(Class("container-chapter-reader")) {
+        let start = Instant::now();
+
         let mut i = 0;
 
         // get the length of a list of all the imgs
@@ -174,59 +140,27 @@ pub(crate) async fn mangakakalot_get_imgs(url: &str, path: &str) {
             i += 1;
             tokio::time::sleep(std::time::Duration::from_millis(g.img_delay.clone())).await;
         }
+        if verbose {
+            println!(
+                "Finished chapter {}{}{} in {}{}{} seconds",
+                c.green,
+                &url.split("/").collect::<Vec<&str>>()[5],
+                c.end,
+                c.green,
+                start.elapsed().as_secs(),
+                c.end
+            );
+        }
     }
 }
 
-// pub(crate) async fn mangakakalot_get_imgs(url: &str, path: &str) {
-//     let c = Color::new();
-//     let g = Globals::new();
-//     fs::create_dir_all(path).unwrap();
-
-//     let res = reqwest::get(url).await;
-//     let html = res.unwrap().text().await.unwrap();
-
-//     let re: Regex = Regex::new(
-//         r#"<div class="container-chapter-reader">((.|\n)*)<div style="text-align:center;">"#,
-//     )
-//     .unwrap();
-
-//     let html = re.captures(&html).unwrap().get(1).unwrap().as_str();
-
-//     let re = Regex::new(r#"<img src="([^"]*)"#).unwrap();
-
-//     let matches = re.find_iter(&html);
-
-//     let mut urls = Vec::new();
-//     for m in matches {
-//         urls.push(&m.as_str()[10..m.as_str().len()]);
-//     }
-
-//     println!("Found {}{:?}{} images", c.green, urls.clone().len(), c.end);
-
-//     // get an image every 500 millis
-//     let start = std::time::Instant::now();
-
-//     let mut i = 0;
-//     for url in urls.clone() {
-//         mangakakalot_fetch_img(url, &i.to_string(), &path).await;
-//         i += 1;
-//         tokio::time::sleep(std::time::Duration::from_millis(g.img_delay.clone())).await;
-//     }
-
-//     let duration = start.elapsed();
-//     // println!("{}", duration.as_secs());
-
-//     println!(
-//         "{}{} ({}{} seconds) {}",
-//         c.green,
-//         "Done",
-//         c.cyan,
-//         duration.as_secs(),
-//         c.end
-//     );
-// }
-
 async fn mangakakalot_fetch_img(url: &str, name: &str, path: &str) {
+    let start = Instant::now();
+    let verbose = std::env::args()
+        .collect::<Vec<String>>()
+        .iter()
+        .any(|arg| arg == "--verbose" || arg == "-v");
+
     let client = reqwest::Client::new();
 
     // Headers need to be here to trick the server into thinking we are a browser requesting from "https://mangakakalot.com/"
@@ -241,4 +175,19 @@ async fn mangakakalot_fetch_img(url: &str, name: &str, path: &str) {
     let num = format!("{:0>3}", name);
     let mut file = fs::File::create(format!("{}/{}.jpg", path, num)).unwrap();
     file.write_all(&res.bytes().await.unwrap()).unwrap();
+    if verbose {
+        let elapsed = start.elapsed();
+        // format elapsed as 00.000 seconds.millis
+        let elapsed = format!("{:02}.{:03}", elapsed.as_secs(), elapsed.subsec_millis());
+
+        println!(
+            "Downloaded image {}{}{} in {}{} s{}",
+            Color::new().green,
+            num,
+            Color::new().end,
+            Color::new().green,
+            elapsed,
+            Color::new().end
+        );
+    }
 }
