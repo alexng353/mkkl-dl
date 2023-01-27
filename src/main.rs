@@ -135,6 +135,8 @@ Options:
     -c [n] or --chapter [n]         Download chapter by index (see --list)
     -n [n] or --name [n]            Download chapter by name in url (see --list)
     -r [n] [n], --range [n] [n]     Download chapters from [n] to [n]
+
+    -v, --verbose                   Show detailed information about the download process
 "#;
 
     println!("{}", help_msg);
