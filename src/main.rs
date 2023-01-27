@@ -152,7 +152,9 @@ async fn download() -> std::io::Result<()> {
 
     match site_name {
         "mangakakalot.com" => mangakakalot::downloader(url, skip).await.unwrap(),
+        // "chapmanganato.com" => chapmanganato::downloader(url, skip).await.unwrap(),
         "chapmanganato.com" => chapmanganato::downloader(url, skip).await.unwrap(),
+
         _ => {
             println!("{}{}{}{}", c.red, site_name, " is not supported", c.end);
             return Ok(());

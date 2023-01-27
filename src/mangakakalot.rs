@@ -1,6 +1,11 @@
 use regex::Regex;
 use reqwest::header;
+use select::predicate::Name;
 use std::{fs, io::Write};
+
+use select::document::Document;
+use select::node::Node;
+use select::predicate::{Attr, Class};
 
 use crate::{
     globals::Globals,
@@ -146,53 +151,80 @@ pub(crate) async fn downloader(url: &str, skip: u32) -> std::io::Result<()> {
 }
 
 pub(crate) async fn mangakakalot_get_imgs(url: &str, path: &str) {
+    let g: Globals = Globals::new();
     let c = Color::new();
-    let g = Globals::new();
     fs::create_dir_all(path).unwrap();
 
     let res = reqwest::get(url).await;
-    let html = res.unwrap().text().await.unwrap();
+    let text = res.unwrap().text().await.unwrap();
+    let html = text.as_str();
 
-    let re: Regex = Regex::new(
-        r#"<div class="container-chapter-reader">((.|\n)*)<div style="text-align:center;">"#,
-    )
-    .unwrap();
+    let document = Document::from(html);
+    for node in document.find(Class("container-chapter-reader")) {
+        let mut i = 0;
 
-    let html = re.captures(&html).unwrap().get(1).unwrap().as_str();
+        // get the length of a list of all the imgs
+        let imgs = node.find(Name("img")).collect::<Vec<Node>>();
 
-    let re = Regex::new(r#"<img src="([^"]*)"#).unwrap();
+        println!("Found {}{:?}{} images", c.green, imgs.len(), c.end);
 
-    let matches = re.find_iter(&html);
-
-    let mut urls = Vec::new();
-    for m in matches {
-        urls.push(&m.as_str()[10..m.as_str().len()]);
+        for img in imgs {
+            let src = img.attr("src").unwrap();
+            mangakakalot_fetch_img(src, &i.to_string(), &path).await;
+            i += 1;
+            tokio::time::sleep(std::time::Duration::from_millis(g.img_delay.clone())).await;
+        }
     }
-
-    println!("Found {}{:?}{} images", c.green, urls.clone().len(), c.end);
-
-    // get an image every 500 millis
-    let start = std::time::Instant::now();
-
-    let mut i = 0;
-    for url in urls.clone() {
-        mangakakalot_fetch_img(url, &i.to_string(), &path).await;
-        i += 1;
-        tokio::time::sleep(std::time::Duration::from_millis(g.img_delay.clone())).await;
-    }
-
-    let duration = start.elapsed();
-    // println!("{}", duration.as_secs());
-
-    println!(
-        "{}{} ({}{} seconds) {}",
-        c.green,
-        "Done",
-        c.cyan,
-        duration.as_secs(),
-        c.end
-    );
 }
+
+// pub(crate) async fn mangakakalot_get_imgs(url: &str, path: &str) {
+//     let c = Color::new();
+//     let g = Globals::new();
+//     fs::create_dir_all(path).unwrap();
+
+//     let res = reqwest::get(url).await;
+//     let html = res.unwrap().text().await.unwrap();
+
+//     let re: Regex = Regex::new(
+//         r#"<div class="container-chapter-reader">((.|\n)*)<div style="text-align:center;">"#,
+//     )
+//     .unwrap();
+
+//     let html = re.captures(&html).unwrap().get(1).unwrap().as_str();
+
+//     let re = Regex::new(r#"<img src="([^"]*)"#).unwrap();
+
+//     let matches = re.find_iter(&html);
+
+//     let mut urls = Vec::new();
+//     for m in matches {
+//         urls.push(&m.as_str()[10..m.as_str().len()]);
+//     }
+
+//     println!("Found {}{:?}{} images", c.green, urls.clone().len(), c.end);
+
+//     // get an image every 500 millis
+//     let start = std::time::Instant::now();
+
+//     let mut i = 0;
+//     for url in urls.clone() {
+//         mangakakalot_fetch_img(url, &i.to_string(), &path).await;
+//         i += 1;
+//         tokio::time::sleep(std::time::Duration::from_millis(g.img_delay.clone())).await;
+//     }
+
+//     let duration = start.elapsed();
+//     // println!("{}", duration.as_secs());
+
+//     println!(
+//         "{}{} ({}{} seconds) {}",
+//         c.green,
+//         "Done",
+//         c.cyan,
+//         duration.as_secs(),
+//         c.end
+//     );
+// }
 
 async fn mangakakalot_fetch_img(url: &str, name: &str, path: &str) {
     let client = reqwest::Client::new();
