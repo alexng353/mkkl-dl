@@ -28,31 +28,14 @@ const METHOD_ZSTD: Option<zip::CompressionMethod> = Some(zip::CompressionMethod:
 const METHOD_ZSTD: Option<zip::CompressionMethod> = None;
 
 pub(crate) async fn compress(src_dir: &str, dst_file: &str) {
-    // read the path, and get all the folders
-
-    // let args: Vec<_> = std::env::args().collect();
-    // if args.len() < 3 {
-    //     println!(
-    //         "Usage: {} <source_directory> <destination_zipfile>",
-    //         args[0]
-    //     );
-    //     return;
-    // }
-
-    // let src_dir = &*args[2];
-    // let dst_file = &*args[3];
-    // println!("src_dir: {}", src_dir);
-    // println!("dst_file: {}", dst_file);
-
-    // get os
-
     for &method in [METHOD_STORED, METHOD_DEFLATED, METHOD_BZIP2, METHOD_ZSTD].iter() {
         if method.is_none() {
             continue;
         }
+
         match doit(src_dir, dst_file, method.unwrap()) {
             Ok(_) => println!(
-                "\ndone: {} written to {}",
+                "done: {} written to {}",
                 src_dir.replace("\\", "/"),
                 dst_file
             ),

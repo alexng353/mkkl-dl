@@ -34,24 +34,20 @@ impl Globals {
             .unwrap();
 
         let zip_format = env::var("ZIP_FORMAT").unwrap_or_else(|_| ZIP_FORMAT.to_string());
-        // search args for -f or --format
-        let zip_format =
-            if args.contains(&"-f".to_string()) || args.contains(&"--format".to_string()) {
-                // get the index of the format flag
-                let index = args
-                    .iter()
-                    .position(|x| x == "-f" || x == "--format")
-                    .unwrap();
-                // get the format from the next index
-                // if args[index + 1] has no leading ".", add one
-                if args[index + 1].starts_with(".") {
-                    args[index + 1].to_string()
-                } else {
-                    format!(".{}", args[index + 1])
-                }
+        // search args for --format
+        let zip_format = if args.contains(&"--format".to_string()) {
+            // get the index of the format flag
+            let index = args.iter().position(|x| x == "--format").unwrap();
+            // get the format from the next index
+            // if args[index + 1] has no leading ".", add one
+            if args[index + 1].starts_with(".") {
+                args[index + 1].to_string()
             } else {
-                zip_format
-            };
+                format!(".{}", args[index + 1])
+            }
+        } else {
+            zip_format
+        };
 
         let auto_compress = env::var("AUTO_COMPRESS")
             .unwrap_or_else(|_| AUTO_COMPRESS.to_string())
@@ -59,11 +55,11 @@ impl Globals {
             .unwrap();
 
         Globals {
-            img_delay: img_delay,
-            output_dir: output_dir,
-            chapter_delay: chapter_delay,
-            zip_format: zip_format,
-            auto_compress: auto_compress,
+            img_delay,
+            output_dir,
+            chapter_delay,
+            zip_format,
+            auto_compress,
         }
     }
 }

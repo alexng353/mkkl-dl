@@ -628,6 +628,22 @@ dependencies = [
 ]
 
 [[package]]
+name = "mkkl-dl"
+version = "0.2.0"
+dependencies = [
+ "dotenv",
+ "regex",
+ "reqwest",
+ "select",
+ "serde_json",
+ "term_size",
+ "tokio",
+ "url",
+ "walkdir",
+ "zip",
+]
+
+[[package]]
 name = "native-tls"
 version = "0.2.11"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -965,22 +981,6 @@ dependencies = [
  "wasm-bindgen-futures",
  "web-sys",
  "winreg",
-]
-
-[[package]]
-name = "rust-mangakakalot"
-version = "0.2.0"
-dependencies = [
- "dotenv",
- "regex",
- "reqwest",
- "select",
- "serde_json",
- "term_size",
- "tokio",
- "url",
- "walkdir",
- "zip",
 ]
 
 [[package]]

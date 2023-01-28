@@ -62,9 +62,7 @@ pub(crate) async fn downloader(url: Url, skip: u32) -> std::io::Result<()> {
     }
 
     if args.contains(&"--list".to_string()) || args.contains(&"-l".to_string()) {
-        let name_index = &url_str.split("/").collect::<Vec<&str>>().len();
-
-        crate::handlers::list::list(chapter_urls.clone(), name_index).unwrap();
+        crate::handlers::list::list(chapter_urls.clone()).unwrap();
 
         return Ok(());
     }

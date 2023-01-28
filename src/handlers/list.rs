@@ -1,54 +1,43 @@
 use crate::utils::color::Color;
 use std::vec;
 
-pub fn list(urls: vec::Vec<&str>, name_index: &usize) -> std::io::Result<()> {
+pub fn list(urls: vec::Vec<&str>) -> std::io::Result<()> {
     // work around for now
-    let name_index = *name_index;
 
     // let tmp = last part of url
 
     let c = Color::new();
     println!("{}{}{}", c.green, "Chapters:", c.end);
 
-    // get average length of url to calculate padding
-    let mut total = 0;
-    for url in urls.clone() {
-        // println!("{}", url.split("/").collect::<Vec<&str>>()[name_index]);
-        total += url.split("/").collect::<Vec<&str>>()[name_index].len();
-    }
+    let total: usize = urls
+        .iter()
+        .map(|url| url.rsplit("/").next().unwrap().len())
+        .sum();
 
     let avg = total / urls.clone().len();
 
-    // figure out the width of the console
     let width = term_size::dimensions().unwrap().0;
 
-    // calculate how many urls can fit on one line
     let mut num = 0;
     let mut tmp = 0;
     for url in urls.clone() {
-        tmp += url.split("/").collect::<Vec<&str>>()[name_index].len() + 5;
+        tmp += url.split("/").collect::<Vec<&str>>().last().unwrap().len() + 3;
         if tmp > width {
             break;
         }
         num += 1;
     }
     num = num / 2;
-    // num -= 1;
 
-    // print n urls per line, 5 characters of padding PER SIDE
-    // println!("{}", avg);
     let mut i = 0;
     for url in urls.clone() {
         if i == num {
             println!();
             i = 0;
         }
-        // let padding = avg - url.len() + 3;
-        //     let num = format!("{:0>3}", name);
 
-        // split url by / and get the last part
-        let name =
-            url.split("/").collect::<Vec<&str>>()[url.split("/").collect::<Vec<&str>>().len() - 1];
+        let split_url = url.split("/").collect::<Vec<&str>>();
+        let name = split_url.last().unwrap();
 
         print!(
             "{}{}: {}{:width$}{}",
@@ -71,6 +60,7 @@ use -n [n] or --name [n]            to download a chapter by name ({}white{} tex
 use -s [n] or --skip [n]            to skip the first n by index ({}yellow{} number)
 use -r [n] [n] or --range [n] [n]   to download a range of chapters by index ({}yellow{} number)
 use -r [n] [n], --range [n] [n]     Download chapters from [n] to [n] by index ({}yellow{} number)
+use -v, --verbose                   to show more info
 
 use -h or --help for more info{}",
         c.cyan,
