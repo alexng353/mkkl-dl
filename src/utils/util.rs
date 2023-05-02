@@ -1,6 +1,5 @@
-use crate::utils::color::Color;
+use colored::Colorize;
 
 pub fn supported_site(site_name: &str) -> () {
-    let c = Color::new();
-    println!("{}{}{}{}", "Site supported: ", c.green, site_name, c.end);
+    println!("Site supported: {}", site_name.green());
 }

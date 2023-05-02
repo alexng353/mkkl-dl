@@ -1,15 +1,24 @@
 use anyhow::Result;
 use clap::{Parser, Subcommand};
 
+mod utils;
+
+mod globals;
+
 mod commands;
 use commands::*;
 
-mod table;
+mod downloaders;
+
+mod chapmanganato;
+mod mangakakalot;
+
+mod handlers;
 
 #[macro_use]
 mod macros;
 
-/// Interact with 🚅 Railway via CLI
+/// Interact with mkkl-dl via CLI
 #[derive(Parser)]
 #[clap(author, version, about, long_about = None)]
 #[clap(propagate_version = true)]
@@ -24,13 +33,19 @@ pub struct Args {
 
 // Generates the commands based on the modules in the commands directory
 // Specify the modules you want to include in the commands_enum! macro
-commands_enum!(
-  test,
-);
+commands_enum!(clean, compress, download);
 
 #[tokio::main]
 async fn main() -> Result<()> {
     let cli = Args::parse();
+
+    println!(
+        "{} {} {} {}",
+        "mkkl-dl".cyan(),
+        env!("CARGO_PKG_VERSION").magenta(),
+        "by".blue(),
+        "alexng353".yellow()
+    );
 
     match Commands::exec(cli).await {
         Ok(_) => {}
