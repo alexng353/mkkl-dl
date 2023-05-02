@@ -30,9 +30,6 @@ pub(crate) async fn mangakakalot(args: Args) -> std::io::Result<()> {
 
     println!("Title: {}", title.green());
 
-    let mut file = fs::File::create(format!("{}.html", title))?;
-    file.write_all(html.as_bytes())?;
-
     let chapter_list = doc.find(Class("chapter-list")).collect::<Vec<Node>>();
 
     let mut chapter_blocks = chapter_list[0].find(Name("a")).collect::<Vec<Node>>();

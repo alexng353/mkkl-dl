@@ -1,5 +1,3 @@
-use std::{fs, io::Write};
-
 use anyhow::Ok;
 use select::{
     document::Document,
@@ -43,9 +41,6 @@ pub async fn command(args: Args, _json: bool) -> Result<()> {
     let title = doc.find(Name("h1")).next().unwrap().text();
 
     println!("Title: {}", title.green());
-
-    let mut file = fs::File::create(format!("{}.html", title))?;
-    file.write_all(html.as_bytes())?;
 
     let chapter_list = doc
         .find(Class(chapter_list_classname))

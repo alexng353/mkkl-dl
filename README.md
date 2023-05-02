@@ -53,9 +53,10 @@ I MADE IT SLOW ON PURPOSE.
 
 The default delay is 500ms between images and 3s between chapters so you don't get instantly banned from mangakakalot.
 
-If you put a .env in the same folder as the executable, it *should* automatically read and parse your settings:
+If you put a .env in the same folder as the executable, it _should_ automatically read and parse your settings:
 
 below are the default settings
+
 ```bash
 # .env
 IMG_DELAY=500 # value in millis
@@ -88,3 +89,7 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 ```
+
+# Attributions
+
+This project uses code from the [Railway's CLIv3](https://github.com/railwayapp/cli), copyright (c) [2023] [Railway Corp.]. The Railway CLI is licensed under the MIT License. A copy of the MIT License can be found in the [attributions/railway/LICENSE] file.
