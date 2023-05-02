@@ -1,3 +1,3 @@
 pub mod chapmanganato;
-pub mod downloaders;
+pub mod downloader;
 pub mod mangakakalot;

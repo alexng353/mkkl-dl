@@ -49,7 +49,7 @@ pub async fn command(args: Args, _json: bool) -> Result<()> {
 
     fs::create_dir_all("./output").context("Failed to create \"output\" directory")?;
 
-    let new_args = crate::downloaders::downloaders::Args {
+    let new_args = crate::downloaders::downloader::Args {
         url: args.url,
         skip: args.skip,
         chapter: args.chapter,
@@ -60,8 +60,8 @@ pub async fn command(args: Args, _json: bool) -> Result<()> {
     };
 
     match site_name {
-        "mangakakalot.com" => mangakakalot::mangakakalot(new_args).await?,
-        "chapmanganato.com" => chapmanganato::chapmanganato(new_args).await?,
+        "mangakakalot.com" => mangakakalot::downloader(new_args).await?,
+        "chapmanganato.com" => chapmanganato::downloader(new_args).await?,
         _ => {
             println!("{} is not supported", site_name);
             return Ok(());
