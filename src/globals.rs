@@ -7,6 +7,7 @@ const CHAPTER_DELAY: u64 = 1000;
 const ZIP_FORMAT: &str = ".zip";
 const AUTO_COMPRESS: bool = false;
 
+#[allow(dead_code)]
 pub(crate) struct Globals {
     pub img_delay: u64,
     pub output_dir: String,

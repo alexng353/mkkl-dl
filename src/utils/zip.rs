@@ -1,6 +1,6 @@
 use zip;
 
-use crate::utils::zipdir::doit;
+use super::zipdir::doit;
 
 const METHOD_STORED: Option<zip::CompressionMethod> = Some(zip::CompressionMethod::Stored);
 

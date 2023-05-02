@@ -24,6 +24,7 @@ pub fn get_render_config() -> RenderConfig {
         )
 }
 
+#[allow(dead_code)]
 pub fn prompt_options<T: Display>(message: &str, options: Vec<T>) -> Result<T> {
     let select = inquire::Select::new(message, options);
     select
@@ -40,6 +41,7 @@ pub fn prompt_confirm(message: &str) -> Result<bool> {
         .context("Failed to prompt for confirm")
 }
 
+#[allow(dead_code)]
 pub fn prompt_confirm_with_default(message: &str, default: bool) -> Result<bool> {
     let confirm = inquire::Confirm::new(message);
     confirm
@@ -49,6 +51,7 @@ pub fn prompt_confirm_with_default(message: &str, default: bool) -> Result<bool>
         .context("Failed to prompt for confirm")
 }
 
+#[allow(dead_code)]
 pub fn prompt_multi_options<T: Display>(message: &str, options: Vec<T>) -> Result<Vec<T>> {
     let multi_select = inquire::MultiSelect::new(message, options);
     multi_select
@@ -57,6 +60,7 @@ pub fn prompt_multi_options<T: Display>(message: &str, options: Vec<T>) -> Resul
         .context("Failed to prompt for multi options")
 }
 
+#[allow(dead_code)]
 pub fn prompt_text(message: &str) -> Result<String> {
     let text = inquire::Text::new(message);
     text.with_render_config(get_render_config())
@@ -64,6 +68,7 @@ pub fn prompt_text(message: &str) -> Result<String> {
         .context("Failed to prompt for text")
 }
 
+#[allow(dead_code)]
 pub fn prompt_select<T: Display>(message: &str, options: Vec<T>) -> Result<T> {
     inquire::Select::new(message, options)
         .with_render_config(get_render_config())

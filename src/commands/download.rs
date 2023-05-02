@@ -1,11 +1,6 @@
 use std::fs;
 
-use select::predicate::{Class, Name};
-
-use crate::{
-    downloaders::mangakakalot,
-    utils::{compress, util::supported_site},
-};
+use crate::{downloaders::chapmanganato, downloaders::mangakakalot, utils::compress};
 
 use super::*;
 
@@ -54,10 +49,9 @@ pub async fn command(args: Args, _json: bool) -> Result<()> {
 
     fs::create_dir_all("./output").context("Failed to create \"output\" directory")?;
 
-    let new_args = crate::downloaders::lib::Args {
+    let new_args = crate::downloaders::downloaders::Args {
         url: args.url,
         skip: args.skip,
-        autocompress: args.autocompress,
         chapter: args.chapter,
         range: args.range,
         verbose: args.verbose,
@@ -67,7 +61,7 @@ pub async fn command(args: Args, _json: bool) -> Result<()> {
 
     match site_name {
         "mangakakalot.com" => mangakakalot::mangakakalot(new_args).await?,
-        "chapmanganato.com" => unimplemented!("chapmanganato.com is not supported yet"),
+        "chapmanganato.com" => chapmanganato::chapmanganato(new_args).await?,
         _ => {
             println!("{} is not supported", site_name);
             return Ok(());

@@ -1,13 +1,9 @@
-use crate::utils::color::Color;
+use anyhow::Result;
+use colored::Colorize;
 use std::vec;
 
-pub fn list(urls: vec::Vec<&str>) -> std::io::Result<()> {
-    // work around for now
-
-    // let tmp = last part of url
-
-    let c = Color::new();
-    println!("{}{}{}", c.green, "Chapters:", c.end);
+pub fn list(urls: vec::Vec<&str>) -> Result<()> {
+    println!("{}", "Chapters:".green());
 
     let total: usize = urls
         .iter()
@@ -40,10 +36,8 @@ pub fn list(urls: vec::Vec<&str>) -> std::io::Result<()> {
         let name = split_url.last().unwrap();
 
         print!(
-            "{}{}: {}{:width$}{}",
-            c.yellow,
-            format!("{:0>3}", urls.iter().position(|x| x == &url).unwrap()),
-            c.end,
+            "{} {:width$}{}",
+            format!("{:0>3}:", urls.iter().position(|x| x == &url).unwrap()).yellow(),
             name,
             " ".repeat(2),
             width = avg + 5
@@ -53,28 +47,21 @@ pub fn list(urls: vec::Vec<&str>) -> std::io::Result<()> {
     println!();
 
     // help message
+    const YELLOW: &str = "\x1b[33m";
+    const CYAN: &str = "\x1b[36m";
+    const WHITE: &str = "\x1b[37m";
+    const END: &str = "\x1b[0m";
+
     println!(
         "{}
 use -c [n] or --chapter [n]         to download a chapter by index ({}yellow{} number)
 use -n [n] or --name [n]            to download a chapter by name ({}white{} text)
 use -s [n] or --skip [n]            to skip the first n by index ({}yellow{} number)
-use -r [n] [n] or --range [n] [n]   to download a range of chapters by index ({}yellow{} number)
-use -r [n] [n], --range [n] [n]     Download chapters from [n] to [n] by index ({}yellow{} number)
+use -r [n]-[n], --range [n] [n]     Download chapters from [n] to [n] by index ({}yellow{} number)
 use -v, --verbose                   to show more info
 
 use -h or --help for more info{}",
-        c.cyan,
-        c.yellow,
-        c.cyan,
-        c.white,
-        c.cyan,
-        c.yellow,
-        c.cyan,
-        c.yellow,
-        c.cyan,
-        c.yellow,
-        c.cyan,
-        c.end
+        CYAN, YELLOW, CYAN, WHITE, CYAN, YELLOW, CYAN, YELLOW, CYAN, END
     );
     Ok(())
 }

@@ -1,8 +1,6 @@
 use anyhow::Result;
 use clap::{Parser, Subcommand};
 
-mod utils;
-
 mod globals;
 
 mod commands;
@@ -10,10 +8,7 @@ use commands::*;
 
 mod downloaders;
 
-mod chapmanganato;
-mod mangakakalot;
-
-mod handlers;
+mod utils;
 
 #[macro_use]
 mod macros;
@@ -33,7 +28,7 @@ pub struct Args {
 
 // Generates the commands based on the modules in the commands directory
 // Specify the modules you want to include in the commands_enum! macro
-commands_enum!(clean, compress, download);
+commands_enum!(clean, compress, download, list);
 
 #[tokio::main]
 async fn main() -> Result<()> {

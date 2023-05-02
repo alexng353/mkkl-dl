@@ -1,3 +1,5 @@
+use anyhow::Ok;
+use anyhow::Result;
 use colored::Colorize;
 use regex::Regex;
 use reqwest::header;
@@ -6,14 +8,13 @@ use select::node::Node;
 use select::predicate::{Class, Name};
 use std::time::Instant;
 use std::{fs, io::Write};
-
 use url::Url;
 
 use crate::{globals::Globals, utils::util::supported_site};
 
 use super::downloaders::Args;
 
-pub(crate) async fn mangakakalot(args: Args) -> std::io::Result<()> {
+pub(crate) async fn chapmanganato(args: Args) -> Result<()> {
     let g = Globals::new();
 
     let url = Url::parse(&args.url).unwrap();
@@ -30,10 +31,9 @@ pub(crate) async fn mangakakalot(args: Args) -> std::io::Result<()> {
 
     println!("Title: {}", title.green());
 
-    let mut file = fs::File::create(format!("{}.html", title))?;
-    file.write_all(html.as_bytes())?;
-
-    let chapter_list = doc.find(Class("chapter-list")).collect::<Vec<Node>>();
+    let chapter_list = doc
+        .find(Class("row-content-chapter"))
+        .collect::<Vec<Node>>();
 
     let mut chapter_blocks = chapter_list[0].find(Name("a")).collect::<Vec<Node>>();
     chapter_blocks.reverse();
@@ -85,9 +85,8 @@ pub(crate) async fn mangakakalot(args: Args) -> std::io::Result<()> {
     );
 
     for (i, url) in chapter_urls.iter().enumerate() {
-        let re = Regex::new("_([0-9]+\\.?[0-9]?)").unwrap();
-
-        let chapter = re.find(url).unwrap().as_str().replace("_", "");
+        let re = Regex::new("-([0-9]+\\.?[0-9]?)").unwrap();
+        let chapter = re.find(url).unwrap().as_str().replace("-", "");
 
         println!(
             "\nDownloading Chapter {} ({}/{})",
@@ -96,24 +95,20 @@ pub(crate) async fn mangakakalot(args: Args) -> std::io::Result<()> {
             chapter_urls.len()
         );
 
-        mangakakalot_get_imgs(
+        chapmanganato_get_imgs(
             url,
             &format!("{}/{}/chapter_{}", &g.output_dir, title, chapter),
-            args.clone(),
+            args.verbose.clone(),
         )
         .await;
-
-        tokio::time::sleep(std::time::Duration::from_millis(g.chapter_delay.clone())).await;
+        tokio::time::sleep(std::time::Duration::from_millis(1000)).await;
     }
 
     Ok(())
 }
 
-pub(crate) async fn mangakakalot_get_imgs(url: &str, path: &str, args: Args) {
-    let verbose = args.verbose.clone();
-
+pub(crate) async fn chapmanganato_get_imgs(url: &str, path: &str, verbose: bool) {
     let g: Globals = Globals::new();
-
     fs::create_dir_all(path).unwrap();
 
     let res = reqwest::get(url).await;
@@ -133,7 +128,7 @@ pub(crate) async fn mangakakalot_get_imgs(url: &str, path: &str, args: Args) {
 
         for img in imgs {
             let src = img.attr("src").unwrap();
-            mangakakalot_fetch_img(src, &i.to_string(), &path, verbose).await;
+            chapmanganato_fetch_img(src, &i.to_string(), &path, verbose.clone()).await;
             i += 1;
             tokio::time::sleep(std::time::Duration::from_millis(g.img_delay.clone())).await;
         }
@@ -142,25 +137,25 @@ pub(crate) async fn mangakakalot_get_imgs(url: &str, path: &str, args: Args) {
             println!(
                 "Finished chapter {} in {} seconds",
                 &url.split("/").collect::<Vec<&str>>()[5].green(),
-                start.elapsed().as_secs().to_string().green()
+                start.elapsed().as_secs().to_string().green(),
             );
         }
     }
 }
 
-async fn mangakakalot_fetch_img(url: &str, name: &str, path: &str, verbose: bool) {
+async fn chapmanganato_fetch_img(url: &str, name: &str, path: &str, verbose: bool) {
     let start = Instant::now();
 
     let client = reqwest::Client::new();
 
     // Headers need to be here to trick the server into thinking we are a browser requesting from "https://mangakakalot.com/"
     let res = client
-        .get(url)
-        .header(header::USER_AGENT, "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/107.0.0.0 Safari/537.36")
-        .header(header::REFERER, "https://mangakakalot.com/")
-        .send()
-        .await
-        .unwrap();
+      .get(url)
+      .header(header::USER_AGENT, "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/107.0.0.0 Safari/537.36")
+      .header(header::REFERER, "referer: https://chapmanganato.com/")
+      .send()
+      .await
+      .unwrap();
 
     let num = format!("{:0>3}", name);
     let mut file = fs::File::create(format!("{}/{}.jpg", path, num)).unwrap();

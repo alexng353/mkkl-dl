@@ -2,7 +2,6 @@
 pub(crate) struct Args {
     pub(crate) url: String,
     pub(crate) skip: Option<u32>,
-    pub(crate) autocompress: bool,
     pub(crate) chapter: Option<u32>,
     pub(crate) range: Option<String>,
     pub(crate) verbose: bool,
