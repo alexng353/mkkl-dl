@@ -23,21 +23,6 @@ pub(crate) struct Args {
     pub(crate) name: Option<String>,
 }
 
-pub fn name(urls: Vec<&str>, name: String) -> Vec<&str> {
-    let mut tmp = Vec::new();
-    for url in urls.clone() {
-        tmp.push(
-            url.split("/").collect::<Vec<&str>>()[url.split("/").collect::<Vec<&str>>().len() - 1],
-        );
-    }
-
-    if let Some(pos) = tmp.iter().position(|&x| &x.trim() == &name.trim()) {
-        vec![urls[pos]]
-    } else {
-        vec![]
-    }
-}
-
 pub(crate) struct Downloader {
     pub(crate) args: Args,
     pub(crate) chapter_list: String,
@@ -102,31 +87,10 @@ impl Downloader {
             return Ok(());
         }
 
-        chapter_urls = if let Some(skip) = self.args.skip.clone() {
-            chapter_urls[skip as usize..].to_vec()
-        } else {
-            chapter_urls
-        };
-
-        chapter_urls = if let Some(chapter) = self.args.chapter.clone() {
-            vec![chapter_urls[chapter as usize]]
-        } else {
-            chapter_urls
-        };
-
-        chapter_urls = if let Some(range) = self.args.range.clone() {
-            let range = range.split("-").collect::<Vec<_>>();
-            let start = range[0].parse::<usize>().unwrap();
-            let end = range[1].parse::<usize>().unwrap();
-
-            chapter_urls[start..end].to_vec()
-        } else {
-            chapter_urls
-        };
-
-        if let Some(name) = self.args.name.clone() {
-            chapter_urls = super::downloader::name(chapter_urls, name);
-        }
+        chapter_urls = super::handlers::skip(chapter_urls, self.args.clone());
+        chapter_urls = super::handlers::chapter_handler(chapter_urls, self.args.clone());
+        chapter_urls = super::handlers::range(chapter_urls, self.args.clone());
+        chapter_urls = super::handlers::name(chapter_urls, self.args.clone());
 
         println!(
             "Downloading {} chapters",
